@@ -25,7 +25,7 @@ medians = pd.read_csv(os.path.join(res_dir, 'median_results.csv'))
 # Drop rows where the 'median' column has NaN values
 medians = medians.dropna(subset=['median'])
 
-# Drop rows where 'region' column is 'contr' (just remove this line to consider 'contr' region)
+# Drop rows where 'region' column is 'contr'
 medians = medians[medians['region'] != 'contr']
 
 # Preprocess the 'patient' column to extract only the number
