@@ -3,6 +3,7 @@ import json
 import os
 import matplotlib.pyplot as plt
 import itertools
+from sklearn.decomposition import PCA
 
 # Load the path to the csv file from paths.json
 with open('paths.json', 'r') as file:
@@ -84,6 +85,17 @@ plt.colorbar()
 plt.title('Correlation Matrix', pad=20)
 plt.savefig(os.path.join(res_dir, 'correlation_matrix.png'))
 
+# Create a DataFrame with the correlation values
+correlation_values = pd.DataFrame(columns=['feature1', 'feature2', 'correlation'])
+for col1, col2 in itertools.combinations(correlation_matrix.columns, 2):
+    correlation_values = correlation_values.append({'feature1': col1, 'feature2': col2, 'correlation': correlation_matrix.loc[col1, col2]}, ignore_index=True)
+
+# Sort the DataFrame by the correlation values
+correlation_values = correlation_values.sort_values(by='correlation', ascending=False)
+
+# Save the correlation values to a csv file 
+correlation_values.to_csv(os.path.join(res_dir, 'correlation_clinical.csv'), index=False)
+
 # Create scatter plots for columns with correlation > 0.5 and < 1
 high_corr_pairs = [(col1, col2) for col1, col2 in itertools.combinations(correlation_matrix.columns, 2) 
                    if 0.5 < abs(correlation_matrix.loc[col1, col2]) < 1]
@@ -97,3 +109,17 @@ for col1, col2 in high_corr_pairs:
     plt.show()
     #plt.savefig(os.path.join(res_dir, f'scatter_{col1}_{col2}.png'))
     plt.close()
+
+# Drop the columns 'mrs_basal', 'mrs_90d', 'tici_end_code'  for PCA calculation
+pca_data = correlation_data.drop(columns=['mrs_basal', 'mrs_90d', 'tici_end_code'])
+
+# Apply PCA to the data frame
+pca = PCA(n_components=3)
+pca_result = pca.fit_transform(pca_data)
+
+# Create a DataFrame with the PCA results
+pca_df = pd.DataFrame(data=pca_result, columns=['PC1', 'PC2'])
+pca_df['patient'] = clinical_data['patient']
+
+# Save the PCA results to a csv file
+pca_df.to_csv(os.path.join(res_dir, 'pca_results.csv'), index=False)
