@@ -1,0 +1,8 @@
+{
+    "results_folder": {
+        "path": "/Users/io/Desktop/Thesis/Data_analysis/Results"
+    },
+    "clinical_data": {
+        "path": "/Users/io/Desktop/Thesis/Data_analysis/clinical_data.csv"
+    }
+}
