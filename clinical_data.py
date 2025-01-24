@@ -13,6 +13,9 @@ file_path = paths['clinical_data']['path']
 # Load the clinical data
 clinical_data = pd.read_csv(file_path)
 
+# If there are missing values in any of the columns, fill them with NaN
+clinical_data = clinical_data.fillna('NaN')
+
 # Path to the directory containing the results of the analysis
 res_dir = paths['results_folder']['path']
 
@@ -35,8 +38,47 @@ medians['patient'] = medians['patient'].astype(str).str.extract(r'(\d+)').astype
 medians = medians.sort_values(by='patient')
 print(medians.head())
 
-# Get unique values for the specified column
+# Get unique values for the specified columns
 parameters = medians['feature'].unique()
 clinical_features = clinical_data.columns
 print(clinical_features)
 patients = medians['patient'].unique()
+
+
+# Create a DataFrame with the first column as 'patient' and other 4 as the 
+# absolute median difference between the brain and the roi for the 4 features
+
+median_diff = pd.DataFrame(columns=['patient'])
+median_diff['patient'] = patients
+
+for patient in patients:
+    for parameter in parameters:
+        brain_median = medians[(medians['feature'] == parameter) & (medians['region'] == 'brain') & (medians['patient'] == patient)]['median'].values
+        roi_median = medians[(medians['feature'] == parameter) & (medians['region'] == 'roi') & (medians['patient'] == patient)]['median'].values
+        if len(brain_median) > 0 and len(roi_median) > 0:
+            median_diff.loc[median_diff['patient'] == patient, f'{parameter}_diff'] = abs(brain_median - roi_median)
+        else: 
+            median_diff.loc[median_diff['patient'] == patient, f'{parameter}_diff'] = None
+
+print(median_diff.head())
+
+# Merge the clinical data with the median_diff DataFrame
+clinical_data = clinical_data.merge(median_diff, on='patient')
+
+# Drop the columns 'patient', 'date', 'tici_end' and 'sex' for correlation calculation
+correlation_data = clinical_data.drop(columns=['patient', 'date', 'tici_end', 'sex'])
+
+# Calculate the correlation matrix
+correlation_matrix = correlation_data.corr()
+
+# Print the correlation matrix
+print(correlation_matrix)
+
+# Optionally, plot the correlation matrix
+plt.figure(figsize=(10, 8))
+plt.matshow(correlation_matrix)
+plt.xticks(range(len(correlation_matrix.columns)), correlation_matrix.columns, rotation=90)
+plt.yticks(range(len(correlation_matrix.columns)), correlation_matrix.columns)
+plt.colorbar()
+plt.title('Correlation Matrix', pad=20)
+plt.show()
