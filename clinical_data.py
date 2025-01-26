@@ -152,3 +152,18 @@ pca_df['patient'] = clinical_data['patient']
 
 # Save the PCA results to a csv file
 pca_df.to_csv(os.path.join(clin_res, 'pca_clinical.csv'), index=False)
+
+# Plot a scatter plot for PC1 vs PC2 vs PC3
+# With the points colored by the 'patient' column
+
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+ax.scatter(pca_df['PC1'], pca_df['PC2'], pca_df['PC3'], c=pca_df['patient'], cmap='viridis')
+ax.set_xlabel('PC1')
+ax.set_ylabel('PC2')
+ax.set_zlabel('PC3')
+plt.title('PCA Analysis')
+plt.savefig(os.path.join(clin_res, 'pca_analysis.png'))
+plt.show()
+plt.close()
+
