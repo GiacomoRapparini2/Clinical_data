@@ -124,8 +124,8 @@ for col1, col2 in high_corr_pairs:
 
 # PCA analysis
 
-# Drop the columns 'aspects', 'mrs_basal', 'mrs_90d', 'tici_end_code'  for PCA calculation
-pca_data = correlation_data.drop(columns=['aspects', 'mrs_basal', 'mrs_90d', 'tici_end_code'])
+# Only keep the columns: 'age', 'roi_volume', 'ltsw_to_ct', 'intensity_cbf_diff', 'intensity_tm_diff'
+pca_data = correlation_data[['age', 'roi_volume', 'ltsw_to_ct', 'intensity_cbf_diff', 'intensity_tm_diff']]
 
 # Drop columns with NaN values
 pca_data = pca_data.dropna(axis=1)
@@ -166,4 +166,8 @@ plt.title('PCA Analysis')
 plt.savefig(os.path.join(clin_res, 'pca_analysis.png'))
 plt.show()
 plt.close()
+
+# Save in a csv file the loadings of the PCA components
+loadings = pd.DataFrame(pca.components_.T, columns=['PC1', 'PC2', 'PC3'], index=pca_data.columns)
+loadings.to_csv(os.path.join(clin_res, 'loadings.csv'))
 
