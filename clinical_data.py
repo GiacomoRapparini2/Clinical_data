@@ -22,11 +22,17 @@ clinical_data = clinical_data.fillna('NaN')
 # Path to the directory containing the results of the analysis
 res_dir = paths['results_folder']['path']
 
-# Load the ROI volumes
-roi_volumes = pd.read_csv(os.path.join(res_dir, 'roi_volumes.csv'))
+# Load the ROI volumes (scaled by the brain volume)
+roi_volumes = pd.read_csv(os.path.join(res_dir, 'roi_volumes_scaled.csv'))
 
 # Preprocess the 'patient' column to extract only the number
 roi_volumes['patient'] = roi_volumes['patient'].astype(str).str.extract(r'(\d+)').astype(int)
+
+# Sort the DataFrame by the 'patient' column
+roi_volumes = roi_volumes.sort_values(by='patient')
+
+# Drop the column 'tot_volume
+roi_volumes = roi_volumes.drop(columns=['tot_volume'])
 
 # Load the medians
 medians = pd.read_csv(os.path.join(res_dir, 'median_results.csv'))
