@@ -19,7 +19,7 @@ clinical_data = pd.read_csv(file_path)
 # If there are missing values in any of the columns, fill them with NaN
 clinical_data = clinical_data.fillna('NaN')
 
-# Path to the directory containing the results of the analysis
+# Path to the directory containing the results of the previous analysis
 res_dir = paths['results_folder']['path']
 
 # Load the ROI volumes (scaled by the brain volume)
@@ -128,7 +128,8 @@ for col1, col2 in high_corr_pairs:
     plt.savefig(os.path.join(clin_res, f'scatter_{col1}_{col2}.png'))
     plt.close()
 
-# PCA analysis
+
+# PCA analysis #############################################################################################
 
 # Only keep the columns: 'age', 'roi_volume', 'ltsw_to_ct', 'intensity_cbf_diff', 'intensity_tm_diff'
 pca_data = correlation_data[['age', 'roi_volume', 'ltsw_to_ct', 'intensity_cbf_diff', 'intensity_tm_diff']]
@@ -168,8 +169,8 @@ ax.scatter(pca_df['PC1'], pca_df['PC2'], pca_df['PC3'], c=pca_df['patient'], cma
 ax.set_xlabel('PC1')
 ax.set_ylabel('PC2')
 ax.set_zlabel('PC3')
-plt.title('PCA Analysis')
-plt.savefig(os.path.join(clin_res, 'pca_analysis.png'))
+plt.title('PCA - Clinical Data')
+plt.savefig(os.path.join(clin_res, 'pca_clinical.png'))
 plt.show()
 plt.close()
 
@@ -177,3 +178,52 @@ plt.close()
 loadings = pd.DataFrame(pca.components_.T, columns=['PC1', 'PC2', 'PC3'], index=pca_data.columns)
 loadings.to_csv(os.path.join(clin_res, 'loadings.csv'))
 
+# Do the PCA only for the perfusion parameters medians
+perf_data = clinical_data[['intensity_cbv_diff', 'intensity_cbf_diff', 'intensity_mtt_diff', 'intensity_tm_diff']]
+
+# Drop columns with NaN values
+perf_data = perf_data.dropna(axis=1)
+
+# Standardize the data
+perf_data_scaled = scaler.fit_transform(perf_data)
+
+# Convert back to a DataFrame
+perf_data_scaled_df = pd.DataFrame(perf_data_scaled, columns=perf_data.columns)
+
+# Apply PCA to the data frame
+pca_perf = PCA(n_components=2)
+pca_perf_result = pca_perf.fit_transform(perf_data_scaled_df)
+
+# Create a DataFrame with the PCA results
+pca_perf_df = pd.DataFrame(data=pca_perf_result, columns=['PC1', 'PC2'])
+pca_perf_df['patient'] = clinical_data['patient']
+
+# Save the PCA results to a csv file
+pca_perf_df.to_csv(os.path.join(clin_res, 'pca_perf_clinical.csv'), index=False)
+
+# Encode the 'sex' column to numeric values
+clinical_data['sex_encoded'] = clinical_data['sex'].astype('category').cat.codes
+
+# Plot a scatter plot for PC1 vs PC2 With the points colored by the 'sex' column of the clinical data
+plt.figure()
+plt.scatter(pca_perf_df['PC1'], pca_perf_df['PC2'], c=clinical_data['sex_encoded'], cmap='viridis')
+plt.xlabel('PC1')
+plt.ylabel('PC2')
+plt.title('PCA - Perfusion Parameters')
+plt.colorbar(label='Sex')
+plt.savefig(os.path.join(clin_res, 'pca_sex.png'))
+plt.show()
+plt.close()
+
+# Plot a scatter plot for PC1 vs PC2 With the points colored by the 'age' column of the clinical data
+plt.figure()
+scatter = plt.scatter(pca_perf_df['PC1'], pca_perf_df['PC2'], c=clinical_data['age'], cmap='viridis')
+plt.xlabel('PC1')
+plt.ylabel('PC2')
+plt.title('PCA - Age')
+# Create a discrete colorbar
+cbar = plt.colorbar(scatter, ticks=range(int(clinical_data['age'].min()), int(clinical_data['age'].max()) + 1))
+cbar.set_label('Age')
+plt.savefig(os.path.join(clin_res, 'pca_age.png'))
+plt.show()
+plt.close()
