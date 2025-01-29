@@ -6,6 +6,20 @@ import itertools
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 
+# Function to plot a scatter plot for the PCA results
+def plot_pca_scatter(pca_df, clinical_data, color_by, title, colormap='viridis', save_path=None):
+    plt.figure()
+    plt.scatter(pca_df['PC1'], pca_df['PC2'], c=clinical_data[color_by], cmap=colormap)
+    plt.xlabel('PC1')
+    plt.ylabel('PC2')
+    plt.title(f'PCA - {title}')
+    plt.colorbar(label=color_by)
+    if save_path:
+        plt.savefig(save_path)
+    plt.show()
+    plt.close()
+
+
 # Load the path to the csv file from paths.json
 with open('paths.json', 'r') as file:
     paths = json.load(file)
@@ -204,26 +218,14 @@ pca_perf_df.to_csv(os.path.join(clin_res, 'pca_perf_clinical.csv'), index=False)
 # Encode the 'sex' column to numeric values
 clinical_data['sex_encoded'] = clinical_data['sex'].astype('category').cat.codes
 
-# Plot a scatter plot for PC1 vs PC2 With the points colored by the 'sex' column of the clinical data
-plt.figure()
-plt.scatter(pca_perf_df['PC1'], pca_perf_df['PC2'], c=clinical_data['sex_encoded'], cmap='viridis')
-plt.xlabel('PC1')
-plt.ylabel('PC2')
-plt.title('PCA - Perfusion Parameters')
-plt.colorbar(label='Sex')
-plt.savefig(os.path.join(clin_res, 'pca_sex.png'))
-plt.show()
-plt.close()
+# Plot a scatter plot for PC1 vs PC2 with the points colored by the 'sex' column of the clinical data
+plot_pca_scatter(pca_df, clinical_data, 'sex_encoded', 'Sex', save_path=os.path.join(clin_res, 'pca_sex.png'))
 
-# Plot a scatter plot for PC1 vs PC2 With the points colored by the 'age' column of the clinical data
-plt.figure()
-scatter = plt.scatter(pca_perf_df['PC1'], pca_perf_df['PC2'], c=clinical_data['age'], cmap='viridis')
-plt.xlabel('PC1')
-plt.ylabel('PC2')
-plt.title('PCA - Age')
-# Create a discrete colorbar
-cbar = plt.colorbar(scatter, ticks=range(int(clinical_data['age'].min()), int(clinical_data['age'].max()) + 1))
-cbar.set_label('Age')
-plt.savefig(os.path.join(clin_res, 'pca_age.png'))
-plt.show()
-plt.close()
+# Plot a scatter plot for PC1 vs PC2 with the points colored by the 'age' column of the clinical data
+plot_pca_scatter(pca_df, clinical_data, 'age', 'Age', save_path=os.path.join(clin_res, 'pca_age.png'))
+
+# Plot a scatter plot for PC1 vs PC2 with the points colored by the 'roi_volume' column of the clinical data
+plot_pca_scatter(pca_df, clinical_data, 'roi_volume', 'ROI Volume', save_path=os.path.join(clin_res, 'pca_roi_volume.png'))
+
+# Plot a scatter plot for PC1 vs PC2 with the points colored by the 'ltsw_to_ct' column of the clinical data
+plot_pca_scatter(pca_df, clinical_data, 'ltsw_to_ct', 'LTSW to CT', save_path=os.path.join(clin_res, 'pca_ltsw_to_ct.png'))
