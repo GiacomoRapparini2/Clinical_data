@@ -175,6 +175,10 @@ pca_df['patient'] = clinical_data['patient']
 # Save the PCA results to a csv file
 pca_df.to_csv(os.path.join(clin_res, 'pca_clinical.csv'), index=False)
 
+# Save the loadings of the PCA components
+loadings = pd.DataFrame(pca.components_.T, columns=['PC1', 'PC2', 'PC3'], index=pca_data.columns)
+loadings.to_csv(os.path.join(clin_res, 'loadings_pca3d.csv'))
+
 # Find the optimal eps using k-NN
 neighbors = NearestNeighbors(n_neighbors=5)
 neighbors_fit = neighbors.fit(pca_df[['PC1', 'PC2', 'PC3']])
@@ -195,7 +199,7 @@ plt.show()
 optimal_eps = distances[np.argmax(np.diff(distances))]
 
 # Perform DBSCAN clustering with the optimal eps
-dbscan = DBSCAN(eps=optimal_eps, min_samples=7)
+dbscan = DBSCAN(eps=optimal_eps, min_samples=6)
 clustering_labels = dbscan.fit_predict(pca_df[['PC1', 'PC2', 'PC3']])
 
 # Add clustering labels to the PCA DataFrame
@@ -242,6 +246,10 @@ pca_perf_df['patient'] = clinical_data['patient']
 
 # Save the PCA results to a csv file
 pca_perf_df.to_csv(os.path.join(clin_res, 'pca_perf_clinical.csv'), index=False)
+
+# Save the loadings of the PCA components
+loadings_perf = pd.DataFrame(pca_perf.components_.T, columns=['PC1', 'PC2'], index=perf_data.columns)
+loadings_perf.to_csv(os.path.join(clin_res, 'loadings_pca_perf.csv'))
 
 # Encode the 'sex' column to numeric values
 clinical_data['sex_encoded'] = clinical_data['sex'].astype('category').cat.codes
