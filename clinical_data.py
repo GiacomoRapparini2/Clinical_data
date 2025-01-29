@@ -5,6 +5,9 @@ import matplotlib.pyplot as plt
 import itertools
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
+from sklearn.cluster import DBSCAN
+from sklearn.neighbors import NearestNeighbors
+import numpy as np
 
 # Function to plot a scatter plot for the PCA results
 def plot_pca_scatter(pca_df, clinical_data, color_by, title, colormap='viridis', save_path=None):
@@ -16,7 +19,6 @@ def plot_pca_scatter(pca_df, clinical_data, color_by, title, colormap='viridis',
     plt.colorbar(label=color_by)
     if save_path:
         plt.savefig(save_path)
-    plt.show()
     plt.close()
 
 
@@ -138,12 +140,11 @@ for col1, col2 in high_corr_pairs:
     plt.xlabel(col1)
     plt.ylabel(col2)
     plt.title(f'Scatter plot between {col1} and {col2}')
-    #plt.show()
     plt.savefig(os.path.join(clin_res, f'scatter_{col1}_{col2}.png'))
     plt.close()
 
 
-# PCA analysis #############################################################################################
+# PCA analysis with DBSCAN clustering ######################################################################
 
 # Only keep the columns: 'age', 'roi_volume', 'ltsw_to_ct', 'intensity_cbf_diff', 'intensity_tm_diff'
 pca_data = correlation_data[['age', 'roi_volume', 'ltsw_to_ct', 'intensity_cbf_diff', 'intensity_tm_diff']]
@@ -174,23 +175,50 @@ pca_df['patient'] = clinical_data['patient']
 # Save the PCA results to a csv file
 pca_df.to_csv(os.path.join(clin_res, 'pca_clinical.csv'), index=False)
 
-# Plot a scatter plot for PC1 vs PC2 vs PC3
-# With the points colored by the 'patient' column
+# Find the optimal eps using k-NN
+neighbors = NearestNeighbors(n_neighbors=5)
+neighbors_fit = neighbors.fit(pca_df[['PC1', 'PC2', 'PC3']])
+distances, indices = neighbors_fit.kneighbors(pca_df[['PC1', 'PC2', 'PC3']])
 
+# Sort the distances and plot the k-distance graph
+distances = np.sort(distances, axis=0)
+distances = distances[:, 4]  # 4th column because n_neighbors=5
+plt.figure()
+plt.plot(distances)
+plt.title('k-NN Distance Graph')
+plt.xlabel('Points sorted by distance')
+plt.ylabel('k-NN distance')
+plt.savefig(os.path.join(clin_res, 'knn_distance_graph.png'))
+plt.show()
+
+# Choose the optimal eps value from the k-distance graph
+optimal_eps = distances[np.argmax(np.diff(distances))]
+
+# Perform DBSCAN clustering with the optimal eps
+dbscan = DBSCAN(eps=optimal_eps, min_samples=7)
+clustering_labels = dbscan.fit_predict(pca_df[['PC1', 'PC2', 'PC3']])
+
+# Add clustering labels to the PCA DataFrame
+pca_df['cluster'] = clustering_labels
+
+# Plot a 3D scatter plot for PC1 vs PC2 vs PC3 with the points colored by the cluster
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
-ax.scatter(pca_df['PC1'], pca_df['PC2'], pca_df['PC3'], c=pca_df['patient'], cmap='viridis')
+scatter = ax.scatter(pca_df['PC1'], pca_df['PC2'], pca_df['PC3'], c=pca_df['cluster'], cmap='viridis')
 ax.set_xlabel('PC1')
 ax.set_ylabel('PC2')
 ax.set_zlabel('PC3')
 plt.title('PCA - Clinical Data')
-plt.savefig(os.path.join(clin_res, 'pca_clinical.png'))
+plt.colorbar(scatter, label='Cluster')
+plt.savefig(os.path.join(clin_res, 'pca_clinical_clusters.png'))
 plt.show()
 plt.close()
 
 # Save in a csv file the loadings of the PCA components
 loadings = pd.DataFrame(pca.components_.T, columns=['PC1', 'PC2', 'PC3'], index=pca_data.columns)
 loadings.to_csv(os.path.join(clin_res, 'loadings.csv'))
+
+#########################################################################################################
 
 # Do the PCA only for the perfusion parameters medians
 perf_data = clinical_data[['intensity_cbv_diff', 'intensity_cbf_diff', 'intensity_mtt_diff', 'intensity_tm_diff']]
