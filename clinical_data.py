@@ -98,7 +98,7 @@ clin_res = os.path.join(res_dir, 'clinical_results')
 if not os.path.exists(clin_res):
     os.makedirs(clin_res)
 
-# Correlation analysis
+# Correlation analysis ########################################################################################
 
 # Drop the columns 'patient', 'date', 'tpa', 'tici_end' and 'sex' for correlation calculation
 correlation_data = clinical_data.drop(columns=['patient', 'date', 'tpa', 'tici_end', 'sex'])
@@ -199,7 +199,7 @@ plt.show()
 optimal_eps = distances[np.argmax(np.diff(distances))]
 
 # Perform DBSCAN clustering with the optimal eps
-dbscan = DBSCAN(eps=optimal_eps, min_samples=6)
+dbscan = DBSCAN(eps=optimal_eps, min_samples=7)
 clustering_labels = dbscan.fit_predict(pca_df[['PC1', 'PC2', 'PC3']])
 
 # Add clustering labels to the PCA DataFrame
@@ -218,9 +218,6 @@ plt.savefig(os.path.join(clin_res, 'pca_clinical_clusters.png'))
 plt.show()
 plt.close()
 
-# Save in a csv file the loadings of the PCA components
-loadings = pd.DataFrame(pca.components_.T, columns=['PC1', 'PC2', 'PC3'], index=pca_data.columns)
-loadings.to_csv(os.path.join(clin_res, 'loadings.csv'))
 
 #########################################################################################################
 
