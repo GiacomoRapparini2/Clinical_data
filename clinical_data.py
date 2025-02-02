@@ -8,18 +8,7 @@ from sklearn.decomposition import PCA
 from sklearn.cluster import DBSCAN
 from sklearn.neighbors import NearestNeighbors
 import numpy as np
-
-# Function to plot a scatter plot for the PCA results
-def plot_pca_scatter(pca_df, clinical_data, color_by, title, colormap='viridis', save_path=None):
-    plt.figure()
-    plt.scatter(pca_df['PC1'], pca_df['PC2'], c=clinical_data[color_by], cmap=colormap)
-    plt.xlabel('PC1')
-    plt.ylabel('PC2')
-    plt.title(f'PCA - {title}')
-    plt.colorbar(label=color_by)
-    if save_path:
-        plt.savefig(save_path)
-    plt.close()
+import functions as fn
 
 
 # Load the path to the csv file from paths.json
@@ -152,32 +141,15 @@ pca_data = correlation_data[['age', 'roi_volume', 'ltsw_to_ct', 'intensity_cbf_d
 # Drop columns with NaN values
 pca_data = pca_data.dropna(axis=1)
 
-# Initialize the scaler
-scaler = StandardScaler()
-
 # Standardize the data
-data_scaled = scaler.fit_transform(pca_data)
-
-# Convert back to a DataFrame
-data_scaled_df = pd.DataFrame(data_scaled, columns=pca_data.columns)
-
-# Check the standardized data
-print(data_scaled_df.head())
+data_scaled_df = fn.standardize_data(pca_data)
 
 # Apply PCA to the data frame
-pca = PCA(n_components=3)
-pca_result = pca.fit_transform(data_scaled_df)
-
-# Create a DataFrame with the PCA results
-pca_df = pd.DataFrame(data=pca_result, columns=['PC1', 'PC2', 'PC3'])
+pca_df, pca = fn.apply_pca(data_scaled_df, n_components=3)
 pca_df['patient'] = clinical_data['patient']
 
 # Save the PCA results to a csv file
-pca_df.to_csv(os.path.join(clin_res, 'pca_clinical.csv'), index=False)
-
-# Save the loadings of the PCA components
-loadings = pd.DataFrame(pca.components_.T, columns=['PC1', 'PC2', 'PC3'], index=pca_data.columns)
-loadings.to_csv(os.path.join(clin_res, 'loadings_pca3d.csv'))
+fn.save_pca_results(pca_df, pca, pca_data.columns, os.path.join(clin_res, 'pca_clinical.csv'), os.path.join(clin_res, 'loadings_pca3d.csv'))
 
 # Find the optimal eps using k-NN
 neighbors = NearestNeighbors(n_neighbors=5)
@@ -228,37 +200,26 @@ perf_data = clinical_data[['intensity_cbv_diff', 'intensity_cbf_diff', 'intensit
 perf_data = perf_data.dropna(axis=1)
 
 # Standardize the data
-perf_data_scaled = scaler.fit_transform(perf_data)
-
-# Convert back to a DataFrame
-perf_data_scaled_df = pd.DataFrame(perf_data_scaled, columns=perf_data.columns)
+perf_data_scaled_df = fn.standardize_data(perf_data)
 
 # Apply PCA to the data frame
-pca_perf = PCA(n_components=2)
-pca_perf_result = pca_perf.fit_transform(perf_data_scaled_df)
-
-# Create a DataFrame with the PCA results
-pca_perf_df = pd.DataFrame(data=pca_perf_result, columns=['PC1', 'PC2'])
+pca_perf_df, pca_perf = fn.apply_pca(perf_data_scaled_df, n_components=2)
 pca_perf_df['patient'] = clinical_data['patient']
 
 # Save the PCA results to a csv file
-pca_perf_df.to_csv(os.path.join(clin_res, 'pca_perf_clinical.csv'), index=False)
-
-# Save the loadings of the PCA components
-loadings_perf = pd.DataFrame(pca_perf.components_.T, columns=['PC1', 'PC2'], index=perf_data.columns)
-loadings_perf.to_csv(os.path.join(clin_res, 'loadings_pca_perf.csv'))
+fn.save_pca_results(pca_perf_df, pca_perf, perf_data.columns, os.path.join(clin_res, 'pca_perf_clinical.csv'), os.path.join(clin_res, 'loadings_pca_perf.csv'))
 
 # Encode the 'sex' column to numeric values
-clinical_data['sex_encoded'] = clinical_data['sex'].astype('category').cat.codes
+clinical_data = fn.encode_column(clinical_data, 'sex')
 
 # Plot a scatter plot for PC1 vs PC2 with the points colored by the 'sex' column of the clinical data
-plot_pca_scatter(pca_df, clinical_data, 'sex_encoded', 'Sex', save_path=os.path.join(clin_res, 'pca_sex.png'))
+fn.plot_pca_scatter(pca_perf_df, clinical_data, 'sex_encoded', 'Sex', save_path=os.path.join(clin_res, 'pca_sex.png'))
 
 # Plot a scatter plot for PC1 vs PC2 with the points colored by the 'age' column of the clinical data
-plot_pca_scatter(pca_df, clinical_data, 'age', 'Age', save_path=os.path.join(clin_res, 'pca_age.png'))
+fn.plot_pca_scatter(pca_perf_df, clinical_data, 'age', 'Age', save_path=os.path.join(clin_res, 'pca_age.png'))
 
 # Plot a scatter plot for PC1 vs PC2 with the points colored by the 'roi_volume' column of the clinical data
-plot_pca_scatter(pca_df, clinical_data, 'roi_volume', 'ROI Volume', save_path=os.path.join(clin_res, 'pca_roi_volume.png'))
+fn.plot_pca_scatter(pca_perf_df, clinical_data, 'roi_volume', 'ROI Volume', save_path=os.path.join(clin_res, 'pca_roi_volume.png'))
 
 # Plot a scatter plot for PC1 vs PC2 with the points colored by the 'ltsw_to_ct' column of the clinical data
-plot_pca_scatter(pca_df, clinical_data, 'ltsw_to_ct', 'LTSW to CT', save_path=os.path.join(clin_res, 'pca_ltsw_to_ct.png'))
+fn.plot_pca_scatter(pca_perf_df, clinical_data, 'ltsw_to_ct', 'LTSW to CT', save_path=os.path.join(clin_res, 'pca_ltsw_to_ct.png'))

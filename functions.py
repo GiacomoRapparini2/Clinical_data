@@ -10,12 +10,6 @@ from sklearn.neighbors import NearestNeighbors
 import numpy as np
 
 
-def load_csv_from_json(json_path, key):
-    """Load a CSV from a path specified in a JSON file."""
-    with open(json_path, 'r') as file:
-        paths = json.load(file)
-    return pd.read_csv(paths[key]['path'])
-
 # Function to standardize data
 def standardize_data(data):
     scaler = StandardScaler()
