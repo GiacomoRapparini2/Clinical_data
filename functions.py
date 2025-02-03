@@ -12,12 +12,31 @@ import numpy as np
 
 # Function to standardize data
 def standardize_data(data):
+    """
+    Standardizes the given data using StandardScaler.
+
+    Parameters:
+    data (pd.DataFrame): The data to be standardized.
+
+    Returns:
+    pd.DataFrame: The standardized data.
+    """
     scaler = StandardScaler()
     data_scaled = scaler.fit_transform(data)
     return pd.DataFrame(data_scaled, columns=data.columns)
 
 # Function to apply PCA
 def apply_pca(data, n_components=3):
+    """
+    Applies PCA to the given data.
+
+    Parameters:
+    data (pd.DataFrame): The data to apply PCA on.
+    n_components (int): The number of principal components to compute.
+
+    Returns:
+    tuple: A tuple containing the PCA result as a DataFrame and the PCA object.
+    """
     pca = PCA(n_components=n_components)
     pca_result = pca.fit_transform(data)
     pca_df = pd.DataFrame(data=pca_result, columns=[f'PC{i+1}' for i in range(n_components)])
@@ -25,17 +44,48 @@ def apply_pca(data, n_components=3):
 
 # Function to save PCA results and loadings
 def save_pca_results(pca_df, pca, data_columns, result_path, loadings_path):
+    """
+    Saves the PCA results and loadings to CSV files.
+
+    Parameters:
+    pca_df (pd.DataFrame): The DataFrame containing the PCA results.
+    pca (PCA): The PCA object.
+    data_columns (Index): The columns of the original data.
+    result_path (str): The path to save the PCA results CSV file.
+    loadings_path (str): The path to save the PCA loadings CSV file.
+    """
     pca_df.to_csv(result_path, index=False)
     loadings = pd.DataFrame(pca.components_.T, columns=pca_df.columns, index=data_columns)
     loadings.to_csv(loadings_path)
 
 # Function to encode a categorical column
 def encode_column(data, column):
+    """
+    Encodes a categorical column to numeric values.
+
+    Parameters:
+    data (pd.DataFrame): The data containing the column to encode.
+    column (str): The name of the column to encode.
+
+    Returns:
+    pd.DataFrame: The data with the encoded column.
+    """
     data[f'{column}_encoded'] = data[column].astype('category').cat.codes
     return data
 
-# Function to plot a scatter plot for the PCA results
+# Function to plot PCA scatter
 def plot_pca_scatter(pca_df, clinical_data, color_by, title, colormap='viridis', save_path=None):
+    """
+    Plots a scatter plot for PCA results.
+
+    Parameters:
+    pca_df (pd.DataFrame): The DataFrame containing the PCA results.
+    clinical_data (pd.DataFrame): The clinical data containing the column to color by.
+    color_by (str): The column name to color the points by.
+    title (str): The title of the plot.
+    colormap (str): The colormap to use for the plot.
+    save_path (str, optional): The path to save the plot. If None, the plot is not saved.
+    """
     plt.figure()
     scatter = plt.scatter(pca_df['PC1'], pca_df['PC2'], c=clinical_data[color_by], cmap=colormap)
     plt.xlabel('PC1')
