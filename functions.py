@@ -8,11 +8,14 @@ from sklearn.decomposition import PCA
 from sklearn.cluster import DBSCAN
 from sklearn.neighbors import NearestNeighbors
 import numpy as np
+import seaborn as sns
+
 
 def load_json(file_path):
     """Load JSON file and return the parsed content."""
     with open(file_path, 'r') as file:
         return json.load(file)
+
 
 def load_csv(file_path, fill_na=None):
     """Load CSV file into a DataFrame, optionally filling NaN values."""
@@ -21,44 +24,48 @@ def load_csv(file_path, fill_na=None):
         df = df.fillna(fill_na)
     return df
 
+
 # Function to calculate, plot, and save the correlation matrix and values
 def calculate_and_save_correlation(correlation_data, save_dir):
     """
-    Calculates the correlation matrix, plots it, and saves the correlation values to a CSV file.
-
+    Calculate, plot, and save the correlation matrix and values.
+    
     Parameters:
-    correlation_data (pd.DataFrame): The data to calculate the correlation matrix on.
-    save_dir (str): The directory to save the correlation matrix plot and CSV file.
-
+    correlation_data (DataFrame): DataFrame containing the data for correlation.
+    save_dir (str): Directory to save the correlation matrix and scatter plots.
+    
     Returns:
-    correlation_matrix: The correlation matrix.
+    correlation_matrix (DataFrame): DataFrame containing the correlation matrix.
     """
     # Calculate the correlation matrix
     correlation_matrix = correlation_data.corr()
-
+    
+    # Save the correlation matrix to a CSV file
+    correlation_matrix.to_csv(os.path.join(save_dir, 'correlation_matrix.csv'))
+    
     # Plot the correlation matrix
     plt.figure(figsize=(10, 8))
-    plt.matshow(correlation_matrix)
-    plt.xticks(range(len(correlation_matrix.columns)), correlation_matrix.columns, rotation=90)
-    plt.yticks(range(len(correlation_matrix.columns)), correlation_matrix.columns)
-    plt.colorbar()
-    plt.title('Correlation Matrix', pad=20)
+    sns.heatmap(correlation_matrix, annot=True, fmt='.2f', cmap='coolwarm')
+    plt.title('Correlation Matrix')
     plt.savefig(os.path.join(save_dir, 'correlation_matrix.png'))
+    plt.close()
+    
+    # Create scatter plots for columns with correlation > 0.5 and < 1
+    high_corr_pairs = [(col1, col2) for col1, col2 in itertools.combinations(correlation_matrix.columns, 2) 
+                       if 0.5 < abs(correlation_matrix.loc[col1, col2]) < 1]
 
-    # Create a DataFrame with the correlation values
-    correlation_values_list = []
-    for col1, col2 in itertools.combinations(correlation_matrix.columns, 2):
-        correlation_values_list.append({'feature1': col1, 'feature2': col2, 'correlation': correlation_matrix.loc[col1, col2]})
-    correlation_values = pd.DataFrame(correlation_values_list)
-
-    # Sort the DataFrame by the correlation values
-    correlation_values = correlation_values.sort_values(by='correlation', ascending=False)
-
-    # Save the correlation values to a csv file 
-    correlation_values.to_csv(os.path.join(save_dir, 'correlation_clinical.csv'), index=False)
-
+    for col1, col2 in high_corr_pairs:
+        plt.figure()
+        plt.scatter(correlation_data[col1], correlation_data[col2])
+        plt.xlabel(col1)
+        plt.ylabel(col2)
+        plt.title(f'Scatter plot between {col1} and {col2}')
+        plt.savefig(os.path.join(save_dir, f'scatter_{col1}_{col2}.png'))
+        plt.close()
+    
     # Return the correlation matrix
     return correlation_matrix
+
 
 # Function to create scatter plots for columns with correlation > threshold and < 1
 def corr_scatter_plots(correlation_data, correlation_matrix, threshold, save_dir):
@@ -83,6 +90,7 @@ def corr_scatter_plots(correlation_data, correlation_matrix, threshold, save_dir
         plt.savefig(os.path.join(save_dir, f'scatter_{col1}_{col2}.png'))
         plt.close()
 
+
 # Function to standardize data
 def standardize_data(data):
     """
@@ -97,6 +105,7 @@ def standardize_data(data):
     scaler = StandardScaler()
     data_scaled = scaler.fit_transform(data)
     return pd.DataFrame(data_scaled, columns=data.columns)
+
 
 # Function to apply PCA
 def apply_pca(data, n_components=3):
@@ -115,6 +124,7 @@ def apply_pca(data, n_components=3):
     pca_df = pd.DataFrame(data=pca_result, columns=[f'PC{i+1}' for i in range(n_components)])
     return pca_df, pca
 
+
 # Function to save PCA results and loadings
 def save_pca_results(pca_df, pca, data_columns, result_path, loadings_path):
     """
@@ -131,6 +141,7 @@ def save_pca_results(pca_df, pca, data_columns, result_path, loadings_path):
     loadings = pd.DataFrame(pca.components_.T, columns=[f'PC{i+1}' for i in range(pca.n_components_)], index=data_columns)
     loadings.to_csv(loadings_path)
 
+
 # Function to encode a categorical column
 def encode_column(data, column):
     """
@@ -145,6 +156,7 @@ def encode_column(data, column):
     """
     data[f'{column}_encoded'] = data[column].astype('category').cat.codes
     return data
+
 
 # Function to plot PCA scatter
 def plot_pca_scatter(pca_df, clinical_data, color_by, title, colormap='viridis', save_path=None):
