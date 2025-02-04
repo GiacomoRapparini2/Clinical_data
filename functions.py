@@ -9,6 +9,17 @@ from sklearn.cluster import DBSCAN
 from sklearn.neighbors import NearestNeighbors
 import numpy as np
 
+def load_json(file_path):
+    """Load JSON file and return the parsed content."""
+    with open(file_path, 'r') as file:
+        return json.load(file)
+
+def load_csv(file_path, fill_na=None):
+    """Load CSV file into a DataFrame, optionally filling NaN values."""
+    df = pd.read_csv(file_path)
+    if fill_na is not None:
+        df = df.fillna(fill_na)
+    return df
 
 # Function to standardize data
 def standardize_data(data):

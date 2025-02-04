@@ -11,18 +11,14 @@ import numpy as np
 import functions as fn
 
 
-# Load the path to the csv file from paths.json
-with open('paths.json', 'r') as file:
-    paths = json.load(file)
+# Load the paths from the json file
+paths = fn.load_json('paths.json')
 
 # Path to the csv file containing clinical data
 file_path = paths['clinical_data']['path']
 
 # Load the clinical data
-clinical_data = pd.read_csv(file_path)
-
-# If there are missing values in any of the columns, fill them with NaN
-clinical_data = clinical_data.fillna('NaN')
+clinical_data = fn.load_csv(file_path, fill_na=1)
 
 # Path to the directory containing the results of the previous analysis
 res_dir = paths['results_folder']['path']
