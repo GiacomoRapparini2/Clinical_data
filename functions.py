@@ -21,6 +21,45 @@ def load_csv(file_path, fill_na=None):
         df = df.fillna(fill_na)
     return df
 
+# Function to calculate, plot, and save the correlation matrix and values
+def calculate_and_save_correlation(correlation_data, save_dir):
+    """
+    Calculates the correlation matrix, plots it, and saves the correlation values to a CSV file.
+
+    Parameters:
+    correlation_data (pd.DataFrame): The data to calculate the correlation matrix on.
+    save_dir (str): The directory to save the correlation matrix plot and CSV file.
+
+    Returns:
+    correlation_matrix: The correlation matrix.
+    """
+    # Calculate the correlation matrix
+    correlation_matrix = correlation_data.corr()
+
+    # Plot the correlation matrix
+    plt.figure(figsize=(10, 8))
+    plt.matshow(correlation_matrix)
+    plt.xticks(range(len(correlation_matrix.columns)), correlation_matrix.columns, rotation=90)
+    plt.yticks(range(len(correlation_matrix.columns)), correlation_matrix.columns)
+    plt.colorbar()
+    plt.title('Correlation Matrix', pad=20)
+    plt.savefig(os.path.join(save_dir, 'correlation_matrix.png'))
+
+    # Create a DataFrame with the correlation values
+    correlation_values_list = []
+    for col1, col2 in itertools.combinations(correlation_matrix.columns, 2):
+        correlation_values_list.append({'feature1': col1, 'feature2': col2, 'correlation': correlation_matrix.loc[col1, col2]})
+    correlation_values = pd.DataFrame(correlation_values_list)
+
+    # Sort the DataFrame by the correlation values
+    correlation_values = correlation_values.sort_values(by='correlation', ascending=False)
+
+    # Save the correlation values to a csv file 
+    correlation_values.to_csv(os.path.join(save_dir, 'correlation_clinical.csv'), index=False)
+
+    # Return the correlation matrix
+    return correlation_matrix
+
 # Function to standardize data
 def standardize_data(data):
     """

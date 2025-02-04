@@ -11,6 +11,8 @@ import numpy as np
 import functions as fn
 
 
+# Preprocess the clinical data ################################################################################
+
 # Load the paths from the json file
 paths = fn.load_json('paths.json')
 
@@ -24,7 +26,7 @@ clinical_data = fn.load_csv(file_path, fill_na=1)
 res_dir = paths['results_folder']['path']
 
 # Load the ROI volumes (scaled by the brain volume)
-roi_volumes = pd.read_csv(os.path.join(res_dir, 'roi_volumes_scaled.csv'))
+roi_volumes = fn.load_csv(os.path.join(res_dir, 'roi_volumes.csv'), fill_na=0)
 
 # Preprocess the 'patient' column to extract only the number
 roi_volumes['patient'] = roi_volumes['patient'].astype(str).str.extract(r'(\d+)').astype(int)
@@ -36,10 +38,7 @@ roi_volumes = roi_volumes.sort_values(by='patient')
 roi_volumes = roi_volumes.drop(columns=['tot_volume'])
 
 # Load the medians
-medians = pd.read_csv(os.path.join(res_dir, 'median_results.csv'))
-
-# Drop rows where the 'median' column has NaN values
-medians = medians.dropna(subset=['median'])
+medians = fn.load_csv(os.path.join(res_dir, 'median_results.csv'), fill_na=1)
 
 # Drop rows where 'region' column is 'contr'
 medians = medians[medians['region'] != 'contr']
@@ -88,32 +87,8 @@ if not os.path.exists(clin_res):
 # Drop the columns 'patient', 'date', 'tpa', 'tici_end' and 'sex' for correlation calculation
 correlation_data = clinical_data.drop(columns=['patient', 'date', 'tpa', 'tici_end', 'sex'])
 
-# Calculate the correlation matrix
-correlation_matrix = correlation_data.corr()
-
-# Print the correlation matrix
-print(correlation_matrix)
-
-# Plot the correlation matrix
-plt.figure(figsize=(10, 8))
-plt.matshow(correlation_matrix)
-plt.xticks(range(len(correlation_matrix.columns)), correlation_matrix.columns, rotation=90)
-plt.yticks(range(len(correlation_matrix.columns)), correlation_matrix.columns)
-plt.colorbar()
-plt.title('Correlation Matrix', pad=20)
-plt.savefig(os.path.join(clin_res, 'correlation_matrix.png'))
-
-# Create a DataFrame with the correlation values
-correlation_values_list = []
-for col1, col2 in itertools.combinations(correlation_matrix.columns, 2):
-    correlation_values_list.append({'feature1': col1, 'feature2': col2, 'correlation': correlation_matrix.loc[col1, col2]})
-correlation_values = pd.DataFrame(correlation_values_list)
-
-# Sort the DataFrame by the correlation values
-correlation_values = correlation_values.sort_values(by='correlation', ascending=False)
-
-# Save the correlation values to a csv file 
-correlation_values.to_csv(os.path.join(clin_res, 'correlation_clinical.csv'), index=False)
+# Calculate, plot, and save the correlation matrix and values
+correlation_matrix = fn.calculate_and_save_correlation(correlation_data, res_dir)
 
 # Create scatter plots for columns with correlation > 0.5 and < 1
 high_corr_pairs = [(col1, col2) for col1, col2 in itertools.combinations(correlation_matrix.columns, 2) 
@@ -153,8 +128,7 @@ neighbors_fit = neighbors.fit(pca_df[['PC1', 'PC2', 'PC3']])
 distances, indices = neighbors_fit.kneighbors(pca_df[['PC1', 'PC2', 'PC3']])
 
 # Sort the distances and plot the k-distance graph
-distances = np.sort(distances, axis=0)
-distances = distances[:, 4]  # 4th column because n_neighbors=5
+distances = np.sort(distances[:, -1])  # Use last column dynamically
 plt.figure()
 plt.plot(distances)
 plt.title('k-NN Distance Graph')
@@ -164,7 +138,7 @@ plt.savefig(os.path.join(clin_res, 'knn_distance_graph.png'))
 plt.show()
 
 # Choose the optimal eps value from the k-distance graph
-optimal_eps = distances[np.argmax(np.diff(distances))]
+optimal_eps = np.percentile(distances, 95)
 
 # Perform DBSCAN clustering with the optimal eps
 dbscan = DBSCAN(eps=optimal_eps, min_samples=7)
