@@ -26,7 +26,7 @@ clinical_data = fn.load_csv(file_path, fill_na=1)
 res_dir = paths['results_folder']['path']
 
 # Load the ROI volumes (scaled by the brain volume)
-roi_volumes = fn.load_csv(os.path.join(res_dir, 'roi_volumes.csv'), fill_na=0)
+roi_volumes = fn.load_csv(os.path.join(res_dir, 'roi_volumes_scaled.csv'), fill_na=0)
 
 # Preprocess the 'patient' column to extract only the number
 roi_volumes['patient'] = roi_volumes['patient'].astype(str).str.extract(r'(\d+)').astype(int)
@@ -80,7 +80,7 @@ clinical_data = clinical_data.merge(median_diff, on='patient')
 # Create a folder to save the results
 clin_res = os.path.join(res_dir, 'clinical_results')
 if not os.path.exists(clin_res):
-    os.makedirs(clin_res)
+    os.makedirs(clin_res, exist_ok=True)
 
 # Correlation analysis ########################################################################################
 
@@ -177,19 +177,13 @@ pca_perf_df, pca_perf = fn.apply_pca(perf_data_scaled_df, n_components=2)
 pca_perf_df['patient'] = clinical_data['patient']
 
 # Save the PCA results to a csv file
-fn.save_pca_results(pca_perf_df, pca_perf, perf_data.columns, os.path.join(clin_res, 'pca_perf_clinical.csv'), os.path.join(clin_res, 'loadings_pca_perf.csv'))
+fn.save_pca_results(pca_perf_df, pca_perf, perf_data_scaled_df.columns, os.path.join(clin_res, 'pca_perf_clinical.csv'), os.path.join(clin_res, 'loadings_pca_perf.csv'))
 
 # Encode the 'sex' column to numeric values
 clinical_data = fn.encode_column(clinical_data, 'sex')
 
-# Plot a scatter plot for PC1 vs PC2 with the points colored by the 'sex' column of the clinical data
+# Plot a scatter plot for PC1 vs PC2 with the points colored by the 'sex', 'age', 'roi_volume' and 'ltsw_to_ct' columns of the clinical data
 fn.plot_pca_scatter(pca_perf_df, clinical_data, 'sex_encoded', 'Sex', save_path=os.path.join(clin_res, 'pca_sex.png'))
-
-# Plot a scatter plot for PC1 vs PC2 with the points colored by the 'age' column of the clinical data
 fn.plot_pca_scatter(pca_perf_df, clinical_data, 'age', 'Age', save_path=os.path.join(clin_res, 'pca_age.png'))
-
-# Plot a scatter plot for PC1 vs PC2 with the points colored by the 'roi_volume' column of the clinical data
 fn.plot_pca_scatter(pca_perf_df, clinical_data, 'roi_volume', 'ROI Volume', save_path=os.path.join(clin_res, 'pca_roi_volume.png'))
-
-# Plot a scatter plot for PC1 vs PC2 with the points colored by the 'ltsw_to_ct' column of the clinical data
 fn.plot_pca_scatter(pca_perf_df, clinical_data, 'ltsw_to_ct', 'LTSW to CT', save_path=os.path.join(clin_res, 'pca_ltsw_to_ct.png'))

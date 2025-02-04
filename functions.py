@@ -105,7 +105,7 @@ def save_pca_results(pca_df, pca, data_columns, result_path, loadings_path):
     loadings_path (str): The path to save the PCA loadings CSV file.
     """
     pca_df.to_csv(result_path, index=False)
-    loadings = pd.DataFrame(pca.components_.T, columns=pca_df.columns, index=data_columns)
+    loadings = pd.DataFrame(pca.components_.T, columns=[f'PC{i+1}' for i in range(pca.n_components_)], index=data_columns)
     loadings.to_csv(loadings_path)
 
 # Function to encode a categorical column
