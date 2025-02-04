@@ -105,12 +105,11 @@ pca_data = pca_data.dropna(axis=1)
 # Standardize the data
 data_scaled_df = fn.standardize_data(pca_data)
 
-# Apply PCA to the data frame
-pca_df, pca = fn.apply_pca(data_scaled_df, n_components=3)
+# Apply PCA to the data frame and save the results
+pca_df, pca = fn.apply_and_save_pca(data_scaled_df, n_components=3, 
+                                    result_path=os.path.join(clin_res, 'pca_clinical.csv'), 
+                                    loadings_path=os.path.join(clin_res, 'loadings_pca3d.csv'))
 pca_df['patient'] = clinical_data['patient']
-
-# Save the PCA results to a csv file
-fn.save_pca_results(pca_df, pca, pca_data.columns, os.path.join(clin_res, 'pca_clinical.csv'), os.path.join(clin_res, 'loadings_pca3d.csv'))
 
 # Find the optimal eps using k-NN
 neighbors = NearestNeighbors(n_neighbors=5)
@@ -162,12 +161,11 @@ perf_data = perf_data.dropna(axis=1)
 # Standardize the data
 perf_data_scaled_df = fn.standardize_data(perf_data)
 
-# Apply PCA to the data frame
-pca_perf_df, pca_perf = fn.apply_pca(perf_data_scaled_df, n_components=2)
+# Apply PCA to the data frame and save the results
+pca_perf_df, pca_perf = fn.apply_and_save_pca(perf_data_scaled_df, n_components=2, 
+                                              result_path=os.path.join(clin_res, 'pca_perf_clinical.csv'), 
+                                              loadings_path=os.path.join(clin_res, 'loadings_pca_perf.csv'))
 pca_perf_df['patient'] = clinical_data['patient']
-
-# Save the PCA results to a csv file
-fn.save_pca_results(pca_perf_df, pca_perf, perf_data_scaled_df.columns, os.path.join(clin_res, 'pca_perf_clinical.csv'), os.path.join(clin_res, 'loadings_pca_perf.csv'))
 
 # Encode the 'sex' column to numeric values
 clinical_data = fn.encode_column(clinical_data, 'sex')

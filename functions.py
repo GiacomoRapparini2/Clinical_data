@@ -107,39 +107,32 @@ def standardize_data(data):
     return pd.DataFrame(data_scaled, columns=data.columns)
 
 
-# Function to apply PCA
-def apply_pca(data, n_components=3):
+def apply_and_save_pca(data, n_components, result_path, loadings_path):
     """
-    Applies PCA to the given data.
+    Applies PCA to the given data and saves the results and loadings to CSV files.
 
     Parameters:
     data (pd.DataFrame): The data to apply PCA on.
     n_components (int): The number of principal components to compute.
+    result_path (str): The path to save the PCA results CSV file.
+    loadings_path (str): The path to save the PCA loadings CSV file.
 
     Returns:
     tuple: A tuple containing the PCA result as a DataFrame and the PCA object.
     """
+    # Apply PCA
     pca = PCA(n_components=n_components)
     pca_result = pca.fit_transform(data)
     pca_df = pd.DataFrame(data=pca_result, columns=[f'PC{i+1}' for i in range(n_components)])
-    return pca_df, pca
-
-
-# Function to save PCA results and loadings
-def save_pca_results(pca_df, pca, data_columns, result_path, loadings_path):
-    """
-    Saves the PCA results and loadings to CSV files.
-
-    Parameters:
-    pca_df (pd.DataFrame): The DataFrame containing the PCA results.
-    pca (PCA): The PCA object.
-    data_columns (Index): The columns of the original data.
-    result_path (str): The path to save the PCA results CSV file.
-    loadings_path (str): The path to save the PCA loadings CSV file.
-    """
+    
+    # Save PCA results
     pca_df.to_csv(result_path, index=False)
-    loadings = pd.DataFrame(pca.components_.T, columns=[f'PC{i+1}' for i in range(pca.n_components_)], index=data_columns)
+    
+    # Save loadings
+    loadings = pd.DataFrame(pca.components_.T, columns=[f'PC{i+1}' for i in range(pca.n_components_)], index=data.columns)
     loadings.to_csv(loadings_path)
+    
+    return pca_df, pca
 
 
 # Function to encode a categorical column
