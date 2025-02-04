@@ -34,7 +34,7 @@ roi_volumes['patient'] = roi_volumes['patient'].astype(str).str.extract(r'(\d+)'
 # Sort the DataFrame by the 'patient' column
 roi_volumes = roi_volumes.sort_values(by='patient')
 
-# Drop the column 'tot_volume
+# Drop the column 'tot_volume'
 roi_volumes = roi_volumes.drop(columns=['tot_volume'])
 
 # Load the medians
@@ -91,17 +91,7 @@ correlation_data = clinical_data.drop(columns=['patient', 'date', 'tpa', 'tici_e
 correlation_matrix = fn.calculate_and_save_correlation(correlation_data, res_dir)
 
 # Create scatter plots for columns with correlation > 0.5 and < 1
-high_corr_pairs = [(col1, col2) for col1, col2 in itertools.combinations(correlation_matrix.columns, 2) 
-                   if 0.5 < abs(correlation_matrix.loc[col1, col2]) < 1]
-
-for col1, col2 in high_corr_pairs:
-    plt.figure()
-    plt.scatter(correlation_data[col1], correlation_data[col2])
-    plt.xlabel(col1)
-    plt.ylabel(col2)
-    plt.title(f'Scatter plot between {col1} and {col2}')
-    plt.savefig(os.path.join(clin_res, f'scatter_{col1}_{col2}.png'))
-    plt.close()
+fn.corr_scatter_plots(correlation_data, correlation_matrix, 0.5, clin_res)
 
 
 # PCA analysis with DBSCAN clustering ######################################################################

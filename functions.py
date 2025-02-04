@@ -60,6 +60,29 @@ def calculate_and_save_correlation(correlation_data, save_dir):
     # Return the correlation matrix
     return correlation_matrix
 
+# Function to create scatter plots for columns with correlation > threshold and < 1
+def corr_scatter_plots(correlation_data, correlation_matrix, threshold, save_dir):
+    """
+    Create scatter plots for columns with correlation > threshold and < 1.
+    
+    Parameters:
+    correlation_data (DataFrame): DataFrame containing the data for correlation.
+    correlation_matrix (DataFrame): DataFrame containing the correlation matrix.
+    threshold (float): The correlation threshold to consider.
+    save_dir (str): Directory to save the scatter plots.
+    """
+    high_corr_pairs = [(col1, col2) for col1, col2 in itertools.combinations(correlation_matrix.columns, 2) 
+                       if threshold < abs(correlation_matrix.loc[col1, col2]) < 1]
+
+    for col1, col2 in high_corr_pairs:
+        plt.figure()
+        plt.scatter(correlation_data[col1], correlation_data[col2])
+        plt.xlabel(col1)
+        plt.ylabel(col2)
+        plt.title(f'Scatter plot between {col1} and {col2}')
+        plt.savefig(os.path.join(save_dir, f'scatter_{col1}_{col2}.png'))
+        plt.close()
+
 # Function to standardize data
 def standardize_data(data):
     """
