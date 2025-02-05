@@ -1,10 +1,6 @@
 import pandas as pd
-import json
 import os
 import matplotlib.pyplot as plt
-import itertools
-from sklearn.preprocessing import StandardScaler
-from sklearn.decomposition import PCA
 from sklearn.cluster import DBSCAN
 from sklearn.neighbors import NearestNeighbors
 import numpy as np
