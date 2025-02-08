@@ -5,9 +5,6 @@ import matplotlib.pyplot as plt
 import itertools
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
-from sklearn.cluster import DBSCAN
-from sklearn.neighbors import NearestNeighbors
-import numpy as np
 import seaborn as sns
 
 
@@ -65,30 +62,6 @@ def calculate_and_save_correlation(correlation_data, save_dir):
     
     # Return the correlation matrix
     return correlation_matrix
-
-
-# Function to create scatter plots for columns with correlation > threshold and < 1
-def corr_scatter_plots(correlation_data, correlation_matrix, threshold, save_dir):
-    """
-    Create scatter plots for columns with correlation > threshold and < 1.
-    
-    Parameters:
-    correlation_data (DataFrame): DataFrame containing the data for correlation.
-    correlation_matrix (DataFrame): DataFrame containing the correlation matrix.
-    threshold (float): The correlation threshold to consider.
-    save_dir (str): Directory to save the scatter plots.
-    """
-    high_corr_pairs = [(col1, col2) for col1, col2 in itertools.combinations(correlation_matrix.columns, 2) 
-                       if threshold < abs(correlation_matrix.loc[col1, col2]) < 1]
-
-    for col1, col2 in high_corr_pairs:
-        plt.figure()
-        plt.scatter(correlation_data[col1], correlation_data[col2])
-        plt.xlabel(col1)
-        plt.ylabel(col2)
-        plt.title(f'Scatter plot between {col1} and {col2}')
-        plt.savefig(os.path.join(save_dir, f'scatter_{col1}_{col2}.png'))
-        plt.close()
 
 
 # Function to standardize data
@@ -165,11 +138,11 @@ def plot_pca_scatter(pca_df, clinical_data, color_by, title, colormap='viridis',
     save_path (str, optional): The path to save the plot. If None, the plot is not saved.
     """
     plt.figure()
-    scatter = plt.scatter(pca_df['PC1'], pca_df['PC2'], c=clinical_data[color_by], cmap=colormap)
+    plt.scatter(pca_df['PC1'], pca_df['PC2'], c=clinical_data[color_by], cmap=colormap)
     plt.xlabel('PC1')
     plt.ylabel('PC2')
     plt.title(f'PCA - {title}')
-    plt.colorbar(scatter, label=color_by)
+    plt.colorbar(label=color_by)
     if save_path:
         plt.savefig(save_path)
     plt.close()

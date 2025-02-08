@@ -74,9 +74,9 @@ clinical_data = clinical_data.merge(roi_volumes, on='patient')
 clinical_data = clinical_data.merge(median_diff, on='patient')
 
 # Create a folder to save the results
-clin_res = os.path.join(res_dir, 'clinical_results')
-if not os.path.exists(clin_res):
-    os.makedirs(clin_res, exist_ok=True)
+clin_res_dir = os.path.join(res_dir, 'clinical_results')
+if not os.path.exists(clin_res_dir):
+    os.makedirs(clin_res_dir, exist_ok=True)
 
 # Correlation analysis ########################################################################################
 
@@ -84,10 +84,7 @@ if not os.path.exists(clin_res):
 correlation_data = clinical_data.drop(columns=['patient', 'date', 'tpa', 'tici_end', 'sex'])
 
 # Calculate, plot, and save the correlation matrix and values
-correlation_matrix = fn.calculate_and_save_correlation(correlation_data, res_dir)
-
-# Create scatter plots for columns with correlation > 0.5 and < 1
-fn.corr_scatter_plots(correlation_data, correlation_matrix, 0.5, clin_res)
+correlation_matrix = fn.calculate_and_save_correlation(correlation_data, clin_res_dir)
 
 
 # PCA analysis with DBSCAN clustering ######################################################################
@@ -103,8 +100,8 @@ data_scaled_df = fn.standardize_data(pca_data)
 
 # Apply PCA to the data frame and save the results
 pca_df, pca = fn.apply_and_save_pca(data_scaled_df, n_components=3, 
-                                    result_path=os.path.join(clin_res, 'pca_clinical.csv'), 
-                                    loadings_path=os.path.join(clin_res, 'loadings_pca3d.csv'))
+                                    result_path=os.path.join(clin_res_dir, 'pca_clinical.csv'), 
+                                    loadings_path=os.path.join(clin_res_dir, 'loadings_pca3d.csv'))
 pca_df['patient'] = clinical_data['patient']
 
 # Find the optimal eps using k-NN
@@ -119,7 +116,7 @@ plt.plot(distances)
 plt.title('k-NN Distance Graph')
 plt.xlabel('Points sorted by distance')
 plt.ylabel('k-NN distance')
-plt.savefig(os.path.join(clin_res, 'knn_distance_graph.png'))
+plt.savefig(os.path.join(clin_res_dir, 'knn_distance_graph.png'))
 plt.show()
 
 # Choose the optimal eps value from the k-distance graph
@@ -141,7 +138,7 @@ ax.set_ylabel('PC2')
 ax.set_zlabel('PC3')
 plt.title('PCA - Clinical Data')
 plt.colorbar(scatter, label='Cluster')
-plt.savefig(os.path.join(clin_res, 'pca_clinical_clusters.png'))
+plt.savefig(os.path.join(clin_res_dir, 'pca_clinical_clusters.png'))
 plt.show()
 plt.close()
 
