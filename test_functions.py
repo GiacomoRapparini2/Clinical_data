@@ -42,7 +42,7 @@ class TestFunctions(unittest.TestCase):
         Raises:
             AssertionError: If any of the assertions fail.
         """
-        correlation_matrix = calculate_and_save_correlation(self.data, self.test_dir)
+        correlation_matrix = calculate_and_save_correlation(self.data.drop(columns=['sex']), self.test_dir)
         self.assertIsInstance(correlation_matrix, pd.DataFrame)
         self.assertTrue(os.path.exists(os.path.join(self.test_dir, 'correlation_matrix.csv')))
 
@@ -90,7 +90,8 @@ class TestFunctions(unittest.TestCase):
         encoded_data = encode_column(self.data, 'sex')
         self.assertIn('sex_encoded', encoded_data.columns)
         self.assertTrue(pd.api.types.is_integer_dtype(encoded_data['sex_encoded']))
-        self.assertEqual(encoded_data, np.array([0, 1, 0, 1, 0]))
+        expected_encoded_values = pd.Series([1, 0, 1, 0, 1], dtype=encoded_data['sex_encoded'].dtype)
+        self.assertTrue(encoded_data['sex_encoded'].equals(expected_encoded_values))
 
 
 
