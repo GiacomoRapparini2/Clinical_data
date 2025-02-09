@@ -1,17 +1,36 @@
-# Clinical Data Analysis Project
-
-Welcome to the Clinical Data Analysis Project repository. This project is designed to analyze clinical trial data to identify significant patterns and outcomes.
+# Clinical data
 
 ## Table of Contents
+- [Abstract](#abstract)
+- [How to Use](#how-to-use)
+- [The Code Structure](#the-code-structure)
+- [Results](#results)
 
-1. [Introduction](#introduction)
+## Abstract
 
 
-## Introduction
+## How to Use
+1. **Download and Installation:**
 
-This project focuses on the analysis of clinical trial data to extract meaningful insights. The primary objectives include:
 
-- Cleaning and preprocessing raw clinical data.
-- Performing statistical analyses to identify significant trends.
-- Visualizing data to aid in the interpretation of results.
+2. **Configuration:**
 
+
+3. **Execution:**
+
+
+## The Code Structure
+The code is organized into the following components:
+
+- **`clinical_data.py`:** The main script that...
+- **`functions.py`:** Contains all the functions that are used by `clinical_data.py`.
+- **`test_functions.py`:** Contains the tests for the functions present in `functions.py`.
+
+     To run the tests, use the command:
+     ```
+     python -m unittest test_functions.py
+     ```
+- **`paths.json/`:** A json file containing paths...
+
+## Results
+...
