@@ -156,15 +156,15 @@ perf_data_scaled_df = fn.standardize_data(perf_data)
 
 # Apply PCA to the data frame and save the results
 pca_perf_df, pca_perf = fn.apply_and_save_pca(perf_data_scaled_df, n_components=2, 
-                                              result_path=os.path.join(clin_res, 'pca_perf_clinical.csv'), 
-                                              loadings_path=os.path.join(clin_res, 'loadings_pca_perf.csv'))
+                                              result_path=os.path.join(clin_res_dir, 'pca_perf_clinical.csv'), 
+                                              loadings_path=os.path.join(clin_res_dir, 'loadings_pca_perf.csv'))
 pca_perf_df['patient'] = clinical_data['patient']
 
 # Encode the 'sex' column to numeric values
 clinical_data = fn.encode_column(clinical_data, 'sex')
 
 # Plot a scatter plot for PC1 vs PC2 with the points colored by the 'sex', 'age', 'roi_volume' and 'ltsw_to_ct' columns of the clinical data
-fn.plot_pca_scatter(pca_perf_df, clinical_data, 'sex_encoded', 'Sex', save_path=os.path.join(clin_res, 'pca_sex.png'))
-fn.plot_pca_scatter(pca_perf_df, clinical_data, 'age', 'Age', save_path=os.path.join(clin_res, 'pca_age.png'))
-fn.plot_pca_scatter(pca_perf_df, clinical_data, 'roi_volume', 'ROI Volume', save_path=os.path.join(clin_res, 'pca_roi_volume.png'))
-fn.plot_pca_scatter(pca_perf_df, clinical_data, 'ltsw_to_ct', 'LTSW to CT', save_path=os.path.join(clin_res, 'pca_ltsw_to_ct.png'))
+fn.plot_pca_scatter(pca_perf_df, clinical_data, 'sex_encoded', 'Sex', save_path=os.path.join(clin_res_dir, 'pca_sex.png'))
+fn.plot_pca_scatter(pca_perf_df, clinical_data, 'age', 'Age', save_path=os.path.join(clin_res_dir, 'pca_age.png'))
+fn.plot_pca_scatter(pca_perf_df, clinical_data, 'roi_volume', 'ROI Volume', save_path=os.path.join(clin_res_dir, 'pca_roi_volume.png'))
+fn.plot_pca_scatter(pca_perf_df, clinical_data, 'ltsw_to_ct', 'LTSW to CT', save_path=os.path.join(clin_res_dir, 'pca_ltsw_to_ct.png'))
