@@ -15,40 +15,41 @@ This project performs a clinical data analysis using Principal Component Analysi
 1. **Download and Installation:**
 
 To use this project, follow these steps:
-	1.	Clone the repository
-    ```
-    git clone https://github.com/your-repository-name.git
-    cd your-repository-name
-    ```
+
+1.	Clone the repository
+```sh
+git clone https://github.com/GiacomoRapparini2/Clinical_data.git
+cd your-repository-name
+```
 
 
-	2.	Create and activate a virtual environment (optional but recommended)
-    ```
-    python -m venv venv
-    source venv/bin/activate  # On macOS/Linux
-    venv\Scripts\activate  # On Windows
-    ```
+2.	Create and activate a virtual environment (optional but recommended)
+```sh
+python -m venv venv
+source venv/bin/activate  # On macOS/Linux
+venv\Scripts\activate  # On Windows
+```
 
 
-	3.	Install dependencies
-    Use this command to install the required libraries to run the code:
-    ```
-    pip install -r requirements.txt
-    ```
+3.	Install dependencies
+Use this command to install the required libraries to run the code:
+```sh
+pip install -r requirements.txt
+```
 
 
-	4.	Ensure that all necessary data files are available, including:
-	    - paths.json (to specify data locations)
-	    - clinical_data.csv (clinical dataset containing the clinical features for all patients)
-	    - roi_volumes_scaled.csv (containing the volumes of the infarct core ROIs rescaled considering the brain)
-        - median_results.csv (containing the median values of each perfusion parameter for each region and for all patients.)
+4.	Ensure that all necessary data files are available, including:
+    - paths.json (to specify data locations)
+    - clinical_data.csv (clinical dataset containing the clinical features for all patients)
+    - roi_volumes_scaled.csv (containing the volumes of the infarct core ROIs rescaled considering the brain)
+    - median_results.csv (containing the median values of each perfusion parameter for each region and for all patients.)
 
 
 
 3. **Execution:**
 
 To run the analysis, simply execute the clinical_data.py script:
-```
+```sh
 python clinical_data.py
 ```
 
@@ -71,6 +72,6 @@ The code is organized into the following components:
      ```
      python -m unittest test_functions.py
      ```
-- **`paths.json/`:** A json file with the paths to the folder containing the clinical_data.csv file and the folder containing the other necessary files, where also the results will be stored.
+- **`paths.json/`:** A json file with the paths to the folder containing the clinical data and the folder containing the results that will be stored.
 
 ## Results
