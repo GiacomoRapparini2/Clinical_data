@@ -8,10 +8,11 @@
 
 ## Abstract
 
-This project performs a clinical data analysis using Principal Component Analysis (PCA) and DBSCAN clustering to identify patterns in patient data. The analysis integrates various clinical parameters, including region-of-interest (ROI) volumes, perfusion parameters, and demographic data, to explore potential relationships and cluster patients based on key features. The workflow includes data preprocessing, correlation analysis, dimensionality reduction, clustering, and visualization of results.
+This project is an independent part of a bigger project which aims to find a perfusion parameters combination that will improve the definition of the ischemic core. This part performs a clinical data analysis using Principal Component Analysis (PCA) and DBSCAN clustering to identify patterns in patient data. The analysis integrates various clinical parameters, including infarct ROI volumes, perfusion parameters medians, and demographic data, to explore potential relationships and cluster patients based on key features. The workflow includes data preprocessing, correlation analysis, dimensionality reduction, clustering, and visualization of results.
 
 
 ## How to Use
+
 1. **Download and Installation:**
 
 To use this project, follow these steps:
@@ -42,11 +43,11 @@ pip install -r requirements.txt
     - paths.json (to specify data locations)
     - clinical_data.csv (clinical dataset containing the clinical features for all patients)
     - roi_volumes_scaled.csv (containing the volumes of the infarct core ROIs rescaled considering the brain)
-    - median_results.csv (containing the median values of each perfusion parameter for each region and for all patients.)
+    - median_results.csv (containing the median values of each perfusion parameter for each region and for all patients)
 
 
 
-3. **Execution:**
+5.  Execution:
 
 To run the analysis, simply execute the clinical_data.py script:
 ```sh
@@ -54,24 +55,26 @@ python clinical_data.py
 ```
 
 This will:
-	- Load and preprocess clinical data
-	- Perform correlation analysis and save results
-	- Apply PCA to obtain dimensionality reduction
-	- Cluster patients using DBSCAN
-	- Generate and save visualizations
+    - Load and preprocess clinical data
+    - Perform correlation analysis and save results
+    - Apply PCA to obtain dimensionality reduction
+    - Cluster patients using DBSCAN
+    - Generate and save visualizations
 
 
 ## The Code Structure
+
 The code is organized into the following components:
 
 - **`clinical_data.py`:** The main script.
 - **`functions.py`:** Contains all the functions that are used by `clinical_data.py`.
 - **`test_functions.py`:** Contains the tests for the functions present in `functions.py`.
 
-     To run the tests, use the command:
-     ```
-     python -m unittest test_functions.py
-     ```
+To run the tests, use the command:
+```sh
+python -m unittest test_functions.py
+```
 - **`paths.json/`:** A json file with the paths to the folder containing the clinical data and the folder containing the results that will be stored.
 
 ## Results
+
