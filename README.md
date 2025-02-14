@@ -81,6 +81,17 @@ python -m unittest test_functions.py
 Here are some examples of possible results from this project:
 
 ![Correlation matrix](correlation_matrix.png)
-![Scatter plot of time from CT to operation vs CBV median difference between core and contralateral hemisphere](scatter_ct_to_groin_punc_intensity_cbv_diff.png)
+
+Correlation matrix with all clinical variables and the median differences between core and contralateral hemisphere of the four perfusion parameters.
+
+![Scatter plot correlation](scatter_ct_to_groin_punc_intensity_cbv_diff.png)
+
+Scatter plot of time from CT to operation vs CBV median difference between core and contralateral hemisphere.
+
 ![PCA scatter plot (3 components) with clustering](pca_clinical_clusters.png)
+
+Scatter plot of the PCA (3 components) with DBSCAN clustering. The variables considered are both clinical and perfusion parameters.
+
 ![PCA scatter plot (2 components) with clinical data labeling (age)](pca_age.png)
+
+PCA scatter plot (2 components) with clinical data labeling (age). The PCA is done only with the 4 perfusion parameters.
