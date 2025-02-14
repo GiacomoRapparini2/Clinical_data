@@ -78,3 +78,9 @@ python -m unittest test_functions.py
 
 ## Results
 
+Here are some examples of possible results from this project:
+
+![Correlation matrix](correlation_matrix.png)
+![Scatter plot of time from CT to operation vs CBV median difference between core and contralateral hemisphere](scatter_ct_to_groin_punc_intensity_cbv_diff.png)
+![PCA scatter plot (3 components) with clustering](pca_clinical_clusters.png)
+![PCA scatter plot (2 components) with clinical data labeling (age)](pca_age.png)
