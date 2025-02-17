@@ -2,7 +2,7 @@ import os
 import unittest
 import pandas as pd
 import numpy as np
-from Script.functions import calculate_and_save_correlation, apply_and_save_pca, encode_column, standardize_data
+from functions import preprocess_clinical_data, calculate_and_save_correlation, apply_and_save_pca, encode_column, standardize_data
 
 class TestFunctions(unittest.TestCase):
 
@@ -11,7 +11,7 @@ class TestFunctions(unittest.TestCase):
         self.test_dir = 'test_output'
         os.makedirs(self.test_dir, exist_ok=True)
         
-        # Create a sample DataFrame for testing
+        # Create a sample DataFrame for testing (clinical data)
         self.data = pd.DataFrame({
             'age': [35, 45, 55, 65, 75],
             'roi_volume': [100, 150, 200, 250, 300],
@@ -21,11 +21,59 @@ class TestFunctions(unittest.TestCase):
             'sex': ['M', 'F', 'M', 'F', 'M']
         })
 
+        # Create a sample DataFrame for testing (ROI volumes)
+        self.roi_volumes = pd.DataFrame({
+            'patient': [1, 2, 3, 4, 5],
+            'roi_volume': [100, 150, 200, 250, 300],
+            'tot_volume': [1000, 1500, 2000, 2500, 3000],
+            'roi_vol_scaled': [120, 180, 230, 260, 300]
+        })
+
+        # Create a sample DataFrame for testing (median results)
+        self.medians = pd.DataFrame({
+            'patient': [1, 2, 3, 4, 5],
+            'region': ['brain', 'roi', 'penum', 'roi', 'brain'],
+            'feature': ['intensity_mtt', 'intensity_tm', 'intensity_cbv', 'intensity_cbf', 'intensity_cbv'],
+            'median': [35, 40, 150, 160, 200]
+        })
+
+
     def tearDown(self):
         # Remove the temporary directory after tests
         for file in os.listdir(self.test_dir):
             os.remove(os.path.join(self.test_dir, file))
         os.rmdir(self.test_dir)
+
+    def test_preprocess_clinical_data(self):
+        """
+        Test the preprocess_clinical_data function.
+
+        This test verifies that the preprocess_clinical_data function correctly processes
+        clinical data, ROI volumes, and median results, and returns the expected outputs.
+
+        Steps:
+        1. Create mock data files for clinical data, ROI volumes, and median results.
+        2. Call the preprocess_clinical_data function with the paths to the mock data files.
+        3. Assert that the returned clinical_data, roi_volumes, and medians are instances of pd.DataFrame.
+        4. Assert that the returned results directory is the same as the test directory.
+
+        Raises:
+            AssertionError: If any of the assertions fail.
+        """
+        paths = {
+            'clinical_data': {'path': os.path.join(self.test_dir, 'clinical_data.csv')},
+            'results_folder': {'path': self.test_dir}
+        }
+        # Create mock data files
+        self.data.to_csv(paths['clinical_data']['path'], index=False)
+        self.roi_volumes.to_csv(os.path.join(self.test_dir, 'roi_volumes_scaled.csv'), index=False)
+        self.medians.to_csv(os.path.join(self.test_dir, 'median_results.csv'), index=False)
+
+        clinical_data, roi_volumes, medians, res_dir = preprocess_clinical_data(paths)
+        self.assertIsInstance(clinical_data, pd.DataFrame)
+        self.assertIsInstance(roi_volumes, pd.DataFrame)
+        self.assertIsInstance(medians, pd.DataFrame)
+        self.assertEqual(res_dir, self.test_dir)
 
     def test_calculate_and_save_correlation(self):
         """

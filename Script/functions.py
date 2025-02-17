@@ -22,6 +22,53 @@ def load_csv(file_path, fill_na=None):
     return df
 
 
+
+def preprocess_clinical_data(paths):
+    """
+    Preprocess the clinical data based on the provided paths.
+
+    Parameters:
+    paths (dict): A dictionary containing paths to the clinical data and results folder.
+
+    Returns:
+    tuple: A tuple containing the preprocessed clinical data, ROI volumes, medians, and results directory.
+    """
+    # Path to the csv file containing clinical data
+    file_path = paths['clinical_data']['path']
+
+    # Load the clinical data
+    clinical_data = load_csv(file_path, fill_na=1)
+
+    # Path to the directory containing the results of the previous analysis
+    res_dir = paths['results_folder']['path']
+
+    # Load the ROI volumes (scaled by the brain volume)
+    roi_volumes = load_csv(os.path.join(res_dir, 'roi_volumes_scaled.csv'), fill_na=0)
+
+    # Preprocess the 'patient' column to extract only the number
+    roi_volumes['patient'] = roi_volumes['patient'].astype(str).str.extract(r'(\d+)').astype(int)
+
+    # Sort the DataFrame by the 'patient' column
+    roi_volumes = roi_volumes.sort_values(by='patient')
+
+    # Drop the column 'tot_volume'
+    roi_volumes = roi_volumes.drop(columns=['tot_volume'])
+
+    # Load the medians
+    medians = load_csv(os.path.join(res_dir, 'median_results.csv'), fill_na=1)
+
+    # Drop rows where 'region' column is 'contr'
+    medians = medians[medians['region'] != 'contr']
+
+    # Preprocess the 'patient' column to extract only the number
+    medians['patient'] = medians['patient'].astype(str).str.extract(r'(\d+)').astype(int)
+
+    # Sort the DataFrame by the 'patient' column
+    medians = medians.sort_values(by='patient')
+
+    return clinical_data, roi_volumes, medians, res_dir
+
+
 # Function to calculate, plot, and save the correlation matrix and values
 def calculate_and_save_correlation(correlation_data, save_dir):
     """

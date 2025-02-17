@@ -4,47 +4,14 @@ import matplotlib.pyplot as plt
 from sklearn.cluster import DBSCAN
 from sklearn.neighbors import NearestNeighbors
 import numpy as np
-import Script.functions as fn
+import functions as fn
 
-
-# Preprocess the clinical data ################################################################################
 
 # Load the paths from the json file
 paths = fn.load_json('paths.json')
 
-# Path to the csv file containing clinical data
-file_path = paths['clinical_data']['path']
-
-# Load the clinical data
-clinical_data = fn.load_csv(file_path, fill_na=1)
-
-# Path to the directory containing the results of the previous analysis
-res_dir = paths['results_folder']['path']
-
-# Load the ROI volumes (scaled by the brain volume)
-roi_volumes = fn.load_csv(os.path.join(res_dir, 'roi_volumes_scaled.csv'), fill_na=0)
-
-# Preprocess the 'patient' column to extract only the number
-roi_volumes['patient'] = roi_volumes['patient'].astype(str).str.extract(r'(\d+)').astype(int)
-
-# Sort the DataFrame by the 'patient' column
-roi_volumes = roi_volumes.sort_values(by='patient')
-
-# Drop the column 'tot_volume'
-roi_volumes = roi_volumes.drop(columns=['tot_volume'])
-
-# Load the medians
-medians = fn.load_csv(os.path.join(res_dir, 'median_results.csv'), fill_na=1)
-
-# Drop rows where 'region' column is 'contr'
-medians = medians[medians['region'] != 'contr']
-
-# Preprocess the 'patient' column to extract only the number
-medians['patient'] = medians['patient'].astype(str).str.extract(r'(\d+)').astype(int)
-
-# Sort the DataFrame by the 'patient' column
-medians = medians.sort_values(by='patient')
-print(medians.head())
+# Preprocess the clinical data
+clinical_data, roi_volumes, medians, res_dir = fn.preprocess_clinical_data(paths)
 
 # Get unique values for the specified columns
 parameters = medians['feature'].unique()
