@@ -2,7 +2,7 @@ import os
 import unittest
 import pandas as pd
 import numpy as np
-from functions import preprocess_clinical_data, calculate_and_save_correlation, apply_and_save_pca, encode_column, standardize_data
+from functions import preprocess_clinical_data, process_medians_and_merge, calculate_and_save_correlation, apply_and_save_pca, encode_column, standardize_data
 
 class TestFunctions(unittest.TestCase):
 
@@ -13,6 +13,7 @@ class TestFunctions(unittest.TestCase):
         
         # Create a sample DataFrame for testing (clinical data)
         self.data = pd.DataFrame({
+            'patient': [1, 2, 3, 4, 5],
             'age': [35, 45, 55, 65, 75],
             'roi_volume': [100, 150, 200, 250, 300],
             'ltsw_to_ct': [50, 100, 150, 200, 250],
@@ -31,9 +32,9 @@ class TestFunctions(unittest.TestCase):
 
         # Create a sample DataFrame for testing (median results)
         self.medians = pd.DataFrame({
-            'patient': [1, 2, 3, 4, 5],
+            'patient': [1, 1, 3, 4, 5],
             'region': ['brain', 'roi', 'penum', 'roi', 'brain'],
-            'feature': ['intensity_mtt', 'intensity_tm', 'intensity_cbv', 'intensity_cbf', 'intensity_cbv'],
+            'feature': ['intensity_mtt', 'intensity_mtt', 'intensity_cbv', 'intensity_cbf', 'intensity_cbv'],
             'median': [35, 40, 150, 160, 200]
         })
 
@@ -74,6 +75,43 @@ class TestFunctions(unittest.TestCase):
         self.assertIsInstance(roi_volumes, pd.DataFrame)
         self.assertIsInstance(medians, pd.DataFrame)
         self.assertEqual(res_dir, self.test_dir)
+
+    def test_process_medians_and_merge(self):
+        """
+        Test the process_medians_and_merge function.
+
+        This test verifies that the process_medians_and_merge function correctly processes
+        and merges clinical data, ROI volumes, and medians into a single DataFrame.
+
+        The test checks the following:
+        - The returned object is an instance of pandas DataFrame.
+        - Sample columns from the 3 input DataFrames are present in the merged DataFrame.
+
+        Attributes:
+        - clinical_data (pd.DataFrame): DataFrame containing clinical data with columns 
+          'patient', 'age', 'roi_volume', 'ltsw_to_ct', 'intensity_cbf_diff', 'intensity_tm_diff', 'sex'.
+        - roi_volumes (pd.DataFrame): DataFrame containing ROI volumes with columns 'patient' and 'roi_volume'.
+        - medians (pd.DataFrame): DataFrame containing medians with columns 'patient', 'feature', 'region', 'median'.
+        """
+        clinical_data = self.data[['patient', 'age', 'ltsw_to_ct', 'sex']]
+        roi_volumes = self.roi_volumes[['patient', 'roi_volume']]
+        medians = self.medians[['patient', 'feature', 'region', 'median']]
+        merged_data = process_medians_and_merge(clinical_data, roi_volumes, medians)
+        self.assertIsInstance(merged_data, pd.DataFrame)
+        self.assertIn('patient', merged_data.columns)
+        self.assertIn('sex', merged_data.columns)
+        self.assertIn('roi_volume', merged_data.columns)
+        self.assertIn('intensity_cbv_diff', merged_data.columns)
+
+        # Check if the median differences are correctly calculated
+        expected_median_diff = {
+            1: {'intensity_mtt_diff': 5}
+        }
+        for patient, diffs in expected_median_diff.items():
+            for feature, expected_diff in diffs.items():
+                self.assertEqual(merged_data.loc[merged_data['patient'] == patient, feature].values[0], expected_diff)
+
+
 
     def test_calculate_and_save_correlation(self):
         """

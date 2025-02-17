@@ -13,32 +13,8 @@ paths = fn.load_json('paths.json')
 # Preprocess the clinical data
 clinical_data, roi_volumes, medians, res_dir = fn.preprocess_clinical_data(paths)
 
-# Get unique values for the specified columns
-parameters = medians['feature'].unique()
-clinical_features = clinical_data.columns
-print(clinical_features)
-patients = medians['patient'].unique()
-
-# Create a DataFrame with the first column as 'patient' and other 4 as the 
-# absolute median difference between the brain and the roi for the 4 features
-
-median_diff = pd.DataFrame(columns=['patient'])
-median_diff['patient'] = patients
-
-for patient in patients:
-    for parameter in parameters:
-        brain_median = medians[(medians['feature'] == parameter) & (medians['region'] == 'brain') & (medians['patient'] == patient)]['median'].values
-        roi_median = medians[(medians['feature'] == parameter) & (medians['region'] == 'roi') & (medians['patient'] == patient)]['median'].values
-        if len(brain_median) > 0 and len(roi_median) > 0:
-            median_diff.loc[median_diff['patient'] == patient, f'{parameter}_diff'] = abs(brain_median - roi_median)
-        else: 
-            median_diff.loc[median_diff['patient'] == patient, f'{parameter}_diff'] = None
-
-print(median_diff.head())
-
-# Merge the clinical data with the median_diff DataFrame and the roi_volumes DataFrame
-clinical_data = clinical_data.merge(roi_volumes, on='patient')
-clinical_data = clinical_data.merge(median_diff, on='patient')
+# Process medians and merge with clinical data and ROI volumes
+clinical_data = fn.process_medians_and_merge(clinical_data, roi_volumes, medians)
 
 # Create a folder to save the results
 clin_res_dir = os.path.join(res_dir, 'clinical_results')

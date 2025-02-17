@@ -69,6 +69,43 @@ def preprocess_clinical_data(paths):
     return clinical_data, roi_volumes, medians, res_dir
 
 
+def process_medians_and_merge(clinical_data, roi_volumes, medians):
+    """
+    Process medians and merge with clinical data and ROI volumes.
+
+    Parameters:
+    clinical_data (pd.DataFrame): The clinical data.
+    roi_volumes (pd.DataFrame): The ROI volumes data.
+    medians (pd.DataFrame): The medians data.
+
+    Returns:
+    pd.DataFrame: The merged clinical data.
+    """
+    # Get unique values for the specified columns
+    parameters = medians['feature'].unique()
+    patients = medians['patient'].unique()
+
+    # Create a DataFrame with the first column as 'patient' and other 4 as the 
+    # absolute median difference between the brain and the roi for the 4 features
+    median_diff = pd.DataFrame(columns=['patient'])
+    median_diff['patient'] = patients
+
+    for patient in patients:
+        for parameter in parameters:
+            brain_median = medians[(medians['feature'] == parameter) & (medians['region'] == 'brain') & (medians['patient'] == patient)]['median'].values
+            roi_median = medians[(medians['feature'] == parameter) & (medians['region'] == 'roi') & (medians['patient'] == patient)]['median'].values
+            if len(brain_median) > 0 and len(roi_median) > 0:
+                median_diff.loc[median_diff['patient'] == patient, f'{parameter}_diff'] = abs(brain_median - roi_median)
+            else: 
+                median_diff.loc[median_diff['patient'] == patient, f'{parameter}_diff'] = None
+
+    # Merge the clinical data with the median_diff DataFrame and the roi_volumes DataFrame
+    clinical_data = clinical_data.merge(roi_volumes, on='patient')
+    clinical_data = clinical_data.merge(median_diff, on='patient')
+
+    return clinical_data
+
+
 # Function to calculate, plot, and save the correlation matrix and values
 def calculate_and_save_correlation(correlation_data, save_dir):
     """
