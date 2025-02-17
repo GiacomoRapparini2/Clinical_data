@@ -99,7 +99,7 @@ celerybeat.pid
 .env
 .venv
 env/
-venv/
+giacomoenv/
 .env/
 ENV/
 env.bak/
