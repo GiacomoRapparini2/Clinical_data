@@ -47,43 +47,8 @@ pca_df, pca = fn.apply_and_save_pca(data_scaled_df, n_components=3,
                                     loadings_path=os.path.join(clin_res_dir, 'loadings_pca3d.csv'))
 pca_df['patient'] = clinical_data['patient']
 
-# Find the optimal eps using k-NN
-neighbors = NearestNeighbors(n_neighbors=5)
-neighbors_fit = neighbors.fit(pca_df[['PC1', 'PC2', 'PC3']])
-distances, indices = neighbors_fit.kneighbors(pca_df[['PC1', 'PC2', 'PC3']])
-
-# Sort the distances and plot the k-distance graph
-distances = np.sort(distances[:, -1])  # Use last column dynamically
-plt.figure()
-plt.plot(distances)
-plt.title('k-NN Distance Graph')
-plt.xlabel('Points sorted by distance')
-plt.ylabel('k-NN distance')
-plt.savefig(os.path.join(clin_res_dir, 'knn_distance_graph.png'))
-plt.show()
-
-# Choose the optimal eps value from the k-distance graph
-optimal_eps = np.percentile(distances, 95)
-
-# Perform DBSCAN clustering with the optimal eps
-dbscan = DBSCAN(eps=optimal_eps, min_samples=7)
-clustering_labels = dbscan.fit_predict(pca_df[['PC1', 'PC2', 'PC3']])
-
-# Add clustering labels to the PCA DataFrame
-pca_df['cluster'] = clustering_labels
-
-# Plot a 3D scatter plot for PC1 vs PC2 vs PC3 with the points colored by the cluster
-fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
-scatter = ax.scatter(pca_df['PC1'], pca_df['PC2'], pca_df['PC3'], c=pca_df['cluster'], cmap='viridis')
-ax.set_xlabel('PC1')
-ax.set_ylabel('PC2')
-ax.set_zlabel('PC3')
-plt.title('PCA - Clinical Data')
-plt.colorbar(scatter, label='Cluster')
-plt.savefig(os.path.join(clin_res_dir, 'pca_clinical_clusters.png'))
-plt.show()
-plt.close()
+# Perform DBSCAN clustering and save the results
+pca_df = fn.perform_dbscan_clustering(pca_df, clin_res_dir)
 
 
 #########################################################################################################

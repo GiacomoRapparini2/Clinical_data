@@ -2,7 +2,7 @@ import os
 import unittest
 import pandas as pd
 import numpy as np
-from functions import preprocess_clinical_data, process_medians_and_merge, calculate_and_save_correlation, apply_and_save_pca, encode_column, standardize_data
+from functions import preprocess_clinical_data, process_medians_and_merge, calculate_and_save_correlation, apply_and_save_pca, perform_dbscan_clustering, encode_column, standardize_data
 
 class TestFunctions(unittest.TestCase):
 
@@ -159,6 +159,37 @@ class TestFunctions(unittest.TestCase):
         self.assertIsInstance(pca_df, pd.DataFrame)
         self.assertTrue(os.path.exists(os.path.join(self.test_dir, 'pca_clinical.csv')))
         self.assertTrue(os.path.exists(os.path.join(self.test_dir, 'loadings_pca3d.csv')))
+
+    def test_perform_dbscan_clustering(self):
+        """
+        Test the perform_dbscan_clustering function.
+
+        This test verifies that the perform_dbscan_clustering function correctly performs
+        DBSCAN clustering on PCA data and saves the results.
+
+        The test checks the following:
+        - The returned object is an instance of pandas DataFrame.
+        - The 'cluster' column is present in the returned DataFrame.
+        - The k-NN distance graph and PCA clusters plot are saved in the specified directory.
+
+        Attributes:
+        - pca_df (pd.DataFrame): DataFrame containing PCA data with columns 'PC1', 'PC2', 'PC3'.
+        - clin_res_dir (str): Directory to save the results.
+        """
+        pca_df = pd.DataFrame({
+            'PC1': [1, 2, 3, 4, 5],
+            'PC2': [2, 3, 4, 5, 6],
+            'PC3': [3, 4, 5, 6, 7],
+            'patient': [1, 2, 3, 4, 5]
+        })
+        clin_res_dir = self.test_dir
+
+        pca_df = perform_dbscan_clustering(pca_df, clin_res_dir)
+        self.assertIsInstance(pca_df, pd.DataFrame)
+        self.assertIn('cluster', pca_df.columns)
+        self.assertTrue(os.path.exists(os.path.join(clin_res_dir, 'knn_distance_graph.png')))
+        self.assertTrue(os.path.exists(os.path.join(clin_res_dir, 'pca_clinical_clusters.png')))
+
 
     def test_encode_column(self):
         """
