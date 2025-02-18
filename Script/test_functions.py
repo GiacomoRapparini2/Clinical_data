@@ -124,6 +124,7 @@ class TestFunctions(unittest.TestCase):
         Assertions:
             - The returned correlation matrix is an instance of pandas DataFrame.
             - A file named 'correlation_matrix.csv' exists in the specified test directory.
+            - The calculated correlation matrix matches the expected correlation matrix.
 
         Raises:
             AssertionError: If any of the assertions fail.
@@ -131,6 +132,13 @@ class TestFunctions(unittest.TestCase):
         correlation_matrix = calculate_and_save_correlation(self.data.drop(columns=['sex']), self.test_dir)
         self.assertIsInstance(correlation_matrix, pd.DataFrame)
         self.assertTrue(os.path.exists(os.path.join(self.test_dir, 'correlation_matrix.csv')))
+
+        # Check if the correlation matrix is calculated correctly
+        expected_correlation_matrix = pd.DataFrame(np.ones(correlation_matrix.shape), 
+                               index=correlation_matrix.index, 
+                               columns=correlation_matrix.columns)
+        pd.testing.assert_frame_equal(correlation_matrix, expected_correlation_matrix)
+
 
     def test_apply_and_save_pca(self):
         """
