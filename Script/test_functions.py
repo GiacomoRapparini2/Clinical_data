@@ -161,10 +161,24 @@ class TestFunctions(unittest.TestCase):
                             expected CSV files do not exist.
         """
         standardized_data = standardize_data(self.data[['age', 'roi_volume', 'ltsw_to_ct', 'intensity_cbf_diff', 'intensity_tm_diff']])
+        expected_standardized_data = pd.DataFrame({
+            'age': [-1.41421356, -0.70710678, 0., 0.70710678, 1.41421356],
+            'roi_volume': [-1.41421356, -0.70710678, 0., 0.70710678, 1.41421356],
+            'ltsw_to_ct': [-1.41421356, -0.70710678, 0., 0.70710678, 1.41421356],
+            'intensity_cbf_diff': [-1.41421356, -0.70710678, 0., 0.70710678, 1.41421356],
+            'intensity_tm_diff': [-1.41421356, -0.70710678, 0., 0.70710678, 1.41421356]
+        })
+        pd.testing.assert_frame_equal(standardized_data, expected_standardized_data)
         pca_df, pca = apply_and_save_pca(standardized_data, n_components=3, 
                                          result_path=os.path.join(self.test_dir, 'pca_clinical.csv'), 
                                          loadings_path=os.path.join(self.test_dir, 'loadings_pca3d.csv'))
         self.assertIsInstance(pca_df, pd.DataFrame)
+        expected_pca_df = pd.DataFrame({
+            'PC1': [-3.1622776601683764, -1.5811388300841889, 0.0, 1.5811388300841889, 3.1622776601683777],
+            'PC2': [0., 0., 0., 0., 0.],
+            'PC3': [0., 0., 0., 0., 0.]
+        })
+        pd.testing.assert_frame_equal(pca_df, expected_pca_df)
         self.assertTrue(os.path.exists(os.path.join(self.test_dir, 'pca_clinical.csv')))
         self.assertTrue(os.path.exists(os.path.join(self.test_dir, 'loadings_pca3d.csv')))
 
@@ -195,6 +209,14 @@ class TestFunctions(unittest.TestCase):
         pca_df = perform_dbscan_clustering(pca_df, clin_res_dir)
         self.assertIsInstance(pca_df, pd.DataFrame)
         self.assertIn('cluster', pca_df.columns)
+        expected_pca_df = pd.DataFrame({
+            'PC1': [1, 2, 3, 4, 5],
+            'PC2': [2, 3, 4, 5, 6],
+            'PC3': [3, 4, 5, 6, 7],
+            'patient': [1, 2, 3, 4, 5],
+            'cluster': [-1, -1, -1, -1, -1]
+        })
+        pd.testing.assert_frame_equal(pca_df, expected_pca_df)
         self.assertTrue(os.path.exists(os.path.join(clin_res_dir, 'knn_distance_graph.png')))
         self.assertTrue(os.path.exists(os.path.join(clin_res_dir, 'pca_clinical_clusters.png')))
 
